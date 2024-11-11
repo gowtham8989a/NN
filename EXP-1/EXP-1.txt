@@ -1,0 +1,5 @@
+import tensorflow as tf
+vector_a = tf.constant([21, 22, 23])
+vector_b = tf.constant([44, 45, 46])
+result = tf.add(vector_a, vector_b)
+print("Result of vector addition:", result.numpy())
