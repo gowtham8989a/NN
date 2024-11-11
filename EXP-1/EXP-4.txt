@@ -1,0 +1,18 @@
+ from tensorflow import keras
+ # Replace these values with appropriate values for your problem
+ input_size = 120 # Number of input features
+ hidden_units = 22 # Number of units in the hidden layer
+ output_units = 1 # Number of output units (e.g., 1 for binary classification)
+ # Define the architecture of the neural network
+ model = keras.Sequential([
+ # Input layer (specify input_shape for the first layer)
+ keras.layers.Input(shape=(input_size,)),
+ # Hidden layer with sigmoid activation
+ keras.layers.Dense(units=hidden_units, activation='sigmoid'),
+ # Output layer
+ keras.layers.Dense(units=output_units, activation='sigmoid')
+ ])
+ # Compile the model
+ model.compile(optimizer='adam',loss='binary_crossentropy',metrics=['accuracy'])
+ # Print the model summary
+ model.summary()

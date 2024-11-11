@@ -1,0 +1,43 @@
+# Import necessary libraries
+import tensorflow as tf
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Flatten
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.optimizers import Adam
+
+# Load and preprocess the dataset
+
+# Example using CIFAR-10 dataset
+(x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
+x_train, x_test = x_train / 255.0, x_test / 255.0
+
+# Convert labels to one-hot encoding
+y_train = tf.keras.utils.to_categorical(y_train, 10)
+y_test = tf.keras.utils.to_categorical(y_test, 10)
+
+# Load pre-trained VGG16 model without the top layer
+base_model = VGG16(weights='imagenet', include_top=False, input_shape=(32, 32, 3))
+
+# Freeze the layers of the pre-trained model
+for layer in base_model.layers:
+    layer.trainable = False
+
+# Add custom layers on top of the pre-trained model
+model = Sequential([
+    base_model,
+    Flatten(),
+    Dense(256, activation='relu'),  # Assuming you intended to use 'relu' activation
+    Dense(10, activation='softmax')
+])
+
+# Compile the model
+model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Train the model
+model.fit(x_train, y_train, epochs=10, batch_size=32, validation_split=0.1)
+
+# Evaluate the model
+test_loss, test_accuracy = model.evaluate(x_test, y_test)
+print(f'Test Accuracy: {test_accuracy}')

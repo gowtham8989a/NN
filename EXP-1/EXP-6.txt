@@ -1,0 +1,60 @@
+# Import necessary libraries
+import tensorflow as tf
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D
+from tensorflow.keras.optimizers import Adam
+from sklearn.model_selection import train_test_split
+import numpy as np
+
+# Load and preprocess the dataset
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+x_train = x_train.reshape(-1, 28, 28, 1).astype('float32') / 255.0
+x_test = x_test.reshape(-1, 28, 28, 1).astype('float32') / 255.0
+y_train = tf.keras.utils.to_categorical(y_train, 10)
+y_test = tf.keras.utils.to_categorical(y_test, 10)
+
+# Initial model training function
+def build_and_train_model(learning_rate, batch_size, epochs):
+    model = Sequential([
+        Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(28, 28, 1)),
+        MaxPooling2D(pool_size=(2, 2)),
+        Flatten(),
+        Dense(128, activation='relu'),
+        Dense(10, activation='softmax')
+    ])
+    optimizer = Adam(learning_rate=learning_rate)  # Corrected line
+    model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+    model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=0.1)
+    test_loss, test_accuracy = model.evaluate(x_test, y_test)
+    return test_accuracy
+
+# Hyperparameter tuning
+learning_rates = [0.001, 0.01, 0.1]
+batch_sizes = [32, 64, 128]
+epochs = 10
+
+best_accuracy = 0
+best_hyperparameters = {}
+
+for lr in learning_rates:
+    for bs in batch_sizes:
+        accuracy = build_and_train_model(lr, bs, epochs)
+        print(f'Learning Rate: {lr}, Batch Size: {bs}, Accuracy: {accuracy}')
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
+            best_hyperparameters = {'learning_rate': lr, 'batch_size': bs}
+
+# Final model training with best hyperparameters
+final_model = Sequential([
+    Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(28, 28, 1)),
+    MaxPooling2D(pool_size=(2, 2)),
+    Flatten(),
+    Dense(128, activation='relu'),
+    Dense(10, activation='softmax')
+])
+optimizer = Adam(learning_rate=best_hyperparameters['learning_rate'])
+final_model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+final_model.fit(x_train, y_train, batch_size=best_hyperparameters['batch_size'], epochs=epochs)
+final_test_loss, final_test_accuracy = final_model.evaluate(x_test, y_test)
+print(f'Final Model Test Accuracy: {final_test_accuracy}')
